@@ -1,0 +1,22 @@
+---
+name: 'chrome-publish-action'
+description: 'Publish browser extension using the Chrome Web Store API v1.1'
+inputs:
+  chrome-extension-id:
+    description: 'Extension ID'
+    required: true
+  chrome-client-id:
+    description: 'Client ID'
+    required: true
+  chrome-client-secret:
+    description: 'Secret Token'
+    required: true
+  chrome-refresh-token:
+    description: 'Refresh Token'
+    required: true
+  zip:
+    required: true
+    description: 'Input file'
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
