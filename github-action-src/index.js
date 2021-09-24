@@ -36,7 +36,7 @@ import core from '@actions/core'
 		const stats = fs.statSync(core.getInput("zip"));
 		const fileSizeInBytes = stats.size;
 
-		const response = await fetch(`https://www.googleapis.com/upload/chromewebstore/v1.1/items/${core.getInput("chrome-extension-id")}`, {
+		const responseUpload = await fetch(`https://www.googleapis.com/upload/chromewebstore/v1.1/items/${core.getInput("chrome-extension-id")}`, {
 			method: "PUT",
 			headers: {
 				"Authorization": `Bearer ${access_token}`,
@@ -46,15 +46,38 @@ import core from '@actions/core'
 			body: readStream
 		})
 
-		const data = await response.json()
+		core.info("Successfully retrieved access token.")
 
-		if(data.uploadState && data.uploadState === "FAILURE") {
-			core.setFailed(data.itemError[0].error_detail)
-		} else if(response.status !== 200) {
-			if(data.error) {
-				throw new Error(data.error.message)
+		const responseUploadData = await responseUpload.json()
+
+		if(responseUploadData.uploadState && responseUploadData.uploadState === "FAILURE") {
+			core.setFailed(responseUploadData.itemError[0].error_detail)
+		} else if(responseUpload.status !== 200) {
+			if(responseUploadData.error) {
+				throw new Error(responseUploadData.error.message)
 			} else {
-				core.setFailed(data)
+				core.setFailed(responseUploadData)
+			}
+		} else {
+			core.info("Successfully uploaded your browser extension.")
+		}
+
+		const responsePublish = await fetch(`https://www.googleapis.com/chromewebstore/v1.1/items/${core.getInput("chrome-extension-id")}/publish`, {
+			method: "POST",
+			headers: {
+				"Authorization": `Bearer ${access_token}`,
+				"x-goog-api-version": 2,
+				"Content-length": fileSizeInBytes
+			}
+		})
+
+		const responsePublishData = await responsePublish.json()
+
+		if(responsePublish.status !== 200) {
+			if(responsePublishData.error && responsePublishData.error.message) {
+				throw new Error(responsePublishData.error.message)
+			} else {
+				core.setFailed(responsePublishData)
 			}
 		} else {
 			core.info("Successfully published your browser extension.")
