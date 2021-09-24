@@ -25,10 +25,11 @@ import core from '@actions/core'
 			if(responseFetchData.error) {
 				throw new Error(responseFetchData.error_description || responseFetchData.error.message)
 			} else {
-				core.setFailed(responseFetchData)
-				return
+				throw new Error("An error occured while retrieving access_token.")
 			}
 		}
+
+		core.info("Successfully retrieved access token.")
 
 		const access_token = responseFetchData.access_token
 
@@ -46,8 +47,6 @@ import core from '@actions/core'
 			body: readStream
 		})
 
-		core.info("Successfully retrieved access token.")
-
 		const responseUploadData = await responseUpload.json()
 
 		if(responseUploadData.uploadState && responseUploadData.uploadState === "FAILURE") {
@@ -56,7 +55,7 @@ import core from '@actions/core'
 			if(responseUploadData.error) {
 				throw new Error(responseUploadData.error.message)
 			} else {
-				core.setFailed(responseUploadData)
+				throw new Error("An error occured while upload the extension.")
 			}
 		} else {
 			core.info("Successfully uploaded your browser extension.")
@@ -77,7 +76,7 @@ import core from '@actions/core'
 			if(responsePublishData.error && responsePublishData.error.message) {
 				throw new Error(responsePublishData.error.message)
 			} else {
-				core.setFailed(responsePublishData)
+				throw new Error("An error occured while publishing the extension.")
 			}
 		} else {
 			core.info("Successfully published your browser extension.")
